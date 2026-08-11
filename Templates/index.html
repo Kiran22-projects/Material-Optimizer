@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Material Optimizer</title>
+
+    <!-- Plotly chart library -->
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+    <!-- Your CSS file -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="top-header">
+
+        <div class="header-left">
+
+            <h1>Material Optimizer</h1>
+
+            <p>
+                Material Selection &amp; Comparison
+            </p>
+
+        </div>
+
+
+        <div class="header-right">
+
+            <span class="status-dot"></span>
+
+            <span>
+                Database Connected
+            </span>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         MAIN APPLICATION
+    ====================================================== -->
+
+    <main class="app-container">
+
+
+        <!-- =================================================
+             LEFT SIDE — INPUT PARAMETERS
+        ================================================== -->
+
+        <aside class="input-panel">
+
+
+            <!-- PANEL TITLE -->
+
+            <div class="panel-heading">
+
+                <div class="panel-heading-icon">
+                    ⚙
+                </div>
+
+                <div>
+
+                    <h2>
+                        INPUT PARAMETERS
+                    </h2>
+
+                    <p>
+                        Define material requirements
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 MATERIAL STANDARD
+            ================================================== -->
+
+            <div class="input-group">
+
+                <label for="standardSelect">
+                    MATERIAL STANDARD
+                </label>
+
+                <select id="standardSelect">
+
+                    <option value="ANSI">
+                        ANSI
+                    </option>
+
+                    <option value="All">
+                        All Standards
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 MATERIAL FAMILY
+            ================================================== -->
+
+            <div class="input-group">
+
+                <label for="familySelect">
+                    MATERIAL FAMILY
+                </label>
+
+                <select id="familySelect">
+
+                    <option value="All">
+                        All
+                    </option>
+
+                    <option value="Ferrous">
+                        Ferrous
+                    </option>
+
+                    <option value="Non-Ferrous">
+                        Non-Ferrous
+                    </option>
+
+                    <option value="Polymer">
+                        Polymer
+                    </option>
+
+                    <option value="Composite">
+                        Composite
+                    </option>
+
+                    <option value="Ceramic">
+                        Ceramic
+                    </option>
+
+                    <option value="Other">
+                        Other
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 SELECT MATERIAL PROPERTIES
+            ================================================== -->
+
+            <div class="input-group">
+
+                <label>
+                    SELECT MATERIAL PROPERTIES
+                </label>
+
+                <p class="input-description">
+                    Select the properties used for
+                    material similarity calculation.
+                </p>
+
+
+                <div id="propertyChecklist"
+                     class="property-checklist">
+
+                    <!--
+                        JavaScript will dynamically
+                        insert the available properties
+                        from the CSV database here.
+                    -->
+
+                    <div class="loading-message">
+                        Loading properties...
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 TARGET VALUES
+            ================================================== -->
+
+            <div class="input-group">
+
+                <label>
+                    TARGET VALUES
+                </label>
+
+                <p class="input-description">
+                    Enter the required value for
+                    each selected property.
+                </p>
+
+
+                <div id="targetInputs"
+                     class="target-inputs">
+
+                    <div class="empty-message">
+
+                        Select properties above
+                        to enter target values.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 ASHBY CHART AXES
+            ================================================== -->
+
+            <div class="input-group">
+
+                <label>
+                    ASHBY CHART
+                </label>
+
+
+                <div class="axis-container">
+
+
+                    <div class="axis-field">
+
+                        <span>
+                            X Axis
+                        </span>
+
+                        <select id="xAxisSelect">
+                        </select>
+
+                    </div>
+
+
+                    <div class="axis-field">
+
+                        <span>
+                            Y Axis
+                        </span>
+
+                        <select id="yAxisSelect">
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 FIND / RESET BUTTONS
+            ================================================== -->
+
+            <div class="button-container">
+
+                <button id="findMaterialsBtn"
+                        class="find-button">
+
+                    🔍
+                    FIND MATERIALS
+
+                </button>
+
+
+                <button id="resetBtn"
+                        class="reset-button">
+
+                    ↻
+                    RESET
+
+                </button>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 ERROR MESSAGE
+            ================================================== -->
+
+            <div id="errorMsg"
+                 class="error-message">
+            </div>
+
+
+
+            <!-- =================================================
+                 DATABASE INFORMATION
+            ================================================== -->
+
+            <div class="database-info">
+
+                <div class="database-info-title">
+                    DATABASE
+                </div>
+
+
+                <div class="database-info-row">
+
+                    <span>
+                        Available Properties
+                    </span>
+
+                    <strong id="propertyCount">
+                        —
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+        </aside>
+
+
+
+        <!-- =================================================
+             RIGHT SIDE — RESULTS
+        ================================================== -->
+
+        <section class="results-area">
+
+
+            <!-- =================================================
+                 RESULTS TABLE
+            ================================================== -->
+
+            <div class="results-card">
+
+
+                <div class="results-header">
+
+
+                    <div>
+
+                        <div class="results-title">
+
+                            <span>
+                                📊
+                            </span>
+
+                            <h2>
+                                COMPARISON OF RECOMMENDED MATERIALS
+                            </h2>
+
+                        </div>
+
+
+                        <p>
+                            Materials ranked by normalized
+                            Euclidean similarity distance
+                        </p>
+
+                    </div>
+
+
+
+                    <div class="materials-count">
+
+                        <span>
+                            Materials Evaluated:
+                        </span>
+
+                        <strong id="materialsEvaluated">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- TABLE -->
+
+                <div class="table-container">
+
+                    <table id="resultsTable">
+
+                        <thead>
+
+                            <tr id="resultsTableHead">
+
+                                <th>
+                                    Rank
+                                </th>
+
+                                <th>
+                                    Material
+                                </th>
+
+                                <th>
+                                    Family
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="resultsTableBody">
+
+                            <tr>
+
+                                <td colspan="3"
+                                    class="table-empty">
+
+                                    Run
+                                    <strong>
+                                        Find Materials
+                                    </strong>
+                                    to see results.
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- =================================================
+                 BOTTOM SECTION
+            ================================================== -->
+
+            <div class="bottom-grid">
+
+
+                <!-- =================================================
+                     ASHBY CHART
+                ================================================== -->
+
+                <div class="chart-card">
+
+
+                    <div class="card-heading">
+
+                        <div>
+
+                            <h3>
+                                📈 ASHBY CHART
+                            </h3>
+
+                            <p id="chartTitle">
+                                Material Property Comparison
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div id="ashbyChart"
+                         class="ashby-chart">
+
+                        <div class="chart-placeholder">
+
+                            <div>
+                                📈
+                            </div>
+
+                            <p>
+                                Run Find Materials to
+                                generate the Ashby chart.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =================================================
+                     TOP 10 MATERIALS
+                ================================================== -->
+
+                <div class="top-materials-card">
+
+
+                    <div class="card-heading">
+
+                        <div>
+
+                            <h3>
+                                🏆 TOP RECOMMENDED MATERIALS
+                            </h3>
+
+                            <p>
+                                Best matching materials
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div id="topMaterialsList"
+                         class="top-materials-list">
+
+                        <div class="top-empty">
+
+                            Results will appear here.
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- =================================================
+                 INFORMATION NOTE
+            ================================================== -->
+
+            <div class="application-note">
+
+                <span>
+                    ⓘ
+                </span>
+
+                Results are filtered using the selected
+                material standard and family. Material
+                similarity is calculated using normalized
+                Euclidean distance.
+
+            </div>
+
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script src="{{ url_for('static', filename='js/script.js') }}">
+    </script>
+
+
+</body>
+
+</html>
